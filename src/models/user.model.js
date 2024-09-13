@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose"
-
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 const userSchema = new Schema(
     {
         username: {
@@ -49,15 +50,19 @@ const userSchema = new Schema(
         timestamps: true
     }
 );
+//userSchema.pre is middleware that is executed just before saving data in Database
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10)
-    next()
+    next();
 })
 
+
+//userSchema.methods is way to create method manually. Here isPasswordCorrect, generateAccessToken 
+// and generateRefreshToken are methoda created manually.
 userSchema.methods.isPasswordCorrect = async function(password){
-    return await bcrypt.compare(password, this.password)
+    return await bcrypt.compare(password, this.password);
 }
 
 userSchema.methods.generateAccessToken = function(){
@@ -72,7 +77,7 @@ userSchema.methods.generateAccessToken = function(){
         {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRY
         }
-    )
+    );
 }
 userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
@@ -84,6 +89,6 @@ userSchema.methods.generateRefreshToken = function(){
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY
         }
-    )
+    );
 }
 export const User = mongoose.model("User", userSchema);
