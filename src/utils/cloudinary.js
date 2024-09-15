@@ -1,6 +1,6 @@
 import {v2 as cloudinary} from "cloudinary";
 import fs from "fs";
-
+import { extractPublicId } from 'cloudinary-build-url'
 
 cloudinary.config({ 
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -30,4 +30,19 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
-export {uploadOnCloudinary};
+const deleteFromCloudinary = async (url) => {
+    try{
+        if(!url) return;
+        const publicId =  extractPublicId(url);
+        await cloudinary.uploader.destroy(publicId);
+        return;
+    }
+    catch(error){
+        console.log("Error in function deleteFromCloudinary",error);
+        return;
+    }
+}
+
+export {    uploadOnCloudinary,
+            deleteFromCloudinary
+       };
